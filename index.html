@@ -5,396 +5,123 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>جدول أبريل 2026</title>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-const firebaseConfig = {
-apiKey: “AIzaSyAXAMkPb9KJtOJFCWXWvy9x34wYQjHdNEA”,
-authDomain: “calendar-april.firebaseapp.com”,
-projectId: “calendar-april”,
-storageBucket: “calendar-april.firebasestorage.app”,
-messagingSenderId: “702724119716”,
-appId: “1:702724119716:web:672f892c9dd515488a5a31”,
-databaseURL: “https://calendar-april-default-rtdb.firebaseio.com”
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const PEOPLE = [
-{ name: “نورة”,  limit: 6, weekend: 3, color: “#e91e8c” },
-{ name: “عليا”,  limit: 5, weekend: 3, color: “#9c27b0” },
-{ name: “ميسا”,  limit: 6, weekend: 3, color: “#3f51b5” },
-{ name: “مهرة”,  limit: 6, weekend: 3, color: “#009688” },
-{ name: “عفراء”, limit: 5, weekend: 3, color: “#ff5722” },
-{ name: “خلود”,  limit: 5, weekend: 3, color: “#795548” },
-{ name: “مروة”,  limit: 5, weekend: 3, color: “#607d8b” },
-];
-
-const ADMIN_PASS = “1234”;
-const DAYS_IN_APRIL = 30;
-const FIRST_DAY = 3; // April 2026 starts on Wednesday
-
-let state = {
-selections: {}, // { “1”: “نورة”, “5”: “عليا”, … }
-weekends: [],   // [5, 6, 12, 13, …]
-adminMode: false,
-currentPerson: null,
-};
-
-// — Firebase sync —
-function saveToFirebase() {
-set(ref(db, “calendar”), {
-selections: state.selections,
-weekends: state.weekends,
-});
-}
-
-onValue(ref(db, “calendar”), (snap) => {
-const data = snap.val();
-if (data) {
-state.selections = data.selections || {};
-state.weekends = data.weekends || [];
-}
-renderCalendar();
-renderStats();
-});
-
-// — DOM —
-window.addEventListener(“DOMContentLoaded”, () => {
-buildPersonButtons();
-buildCalendar();
-renderStats();
-
-```
-document.getElementById("adminBtn").addEventListener("click", toggleAdmin);
-```
-
-});
-
-function buildPersonButtons() {
-const wrap = document.getElementById(“personBtns”);
-PEOPLE.forEach(p => {
-const btn = document.createElement(“button”);
-btn.className = “person-btn”;
-btn.textContent = p.name;
-btn.style.setProperty(”–c”, p.color);
-btn.addEventListener(“click”, () => selectPerson(p.name, btn));
-wrap.appendChild(btn);
-});
-}
-
-function selectPerson(name, btn) {
-if (state.adminMode) return;
-state.currentPerson = name;
-document.querySelectorAll(”.person-btn”).forEach(b => b.classList.remove(“active”));
-btn.classList.add(“active”);
-document.getElementById(“hint”).textContent = `اخترت: ${name} — اضغطي على الأيام اللي تبينها`;
-}
-
-function buildCalendar() {
-const grid = document.getElementById(“calGrid”);
-const dayNames = [“الأحد”,“الإثنين”,“الثلاثاء”,“الأربعاء”,“الخميس”,“الجمعة”,“السبت”];
-dayNames.forEach(d => {
-const el = document.createElement(“div”);
-el.className = “day-name”;
-el.textContent = d;
-grid.appendChild(el);
-});
-// empty cells
-for (let i = 0; i < FIRST_DAY; i++) {
-const el = document.createElement(“div”);
-el.className = “day empty”;
-grid.appendChild(el);
-}
-for (let d = 1; d <= DAYS_IN_APRIL; d++) {
-const el = document.createElement(“div”);
-el.className = “day”;
-el.id = `day-${d}`;
-el.innerHTML = `<span class="dnum">${d}</span><span class="downer"></span>`;
-el.addEventListener(“click”, () => onDayClick(d));
-grid.appendChild(el);
-}
-}
-
-function renderCalendar() {
-for (let d = 1; d <= DAYS_IN_APRIL; d++) {
-const el = document.getElementById(`day-${d}`);
-if (!el) continue;
-const owner = state.selections[d];
-const isWeekend = state.weekends.includes(d);
-el.className = “day”;
-el.querySelector(”.downer”).textContent = “”;
-el.style.background = “”;
-el.style.color = “”;
-el.style.borderColor = “”;
-
-```
-  if (isWeekend) {
-    el.classList.add("weekend");
-    el.querySelector(".downer").textContent = "إجازة";
-  } else if (owner) {
-    const p = PEOPLE.find(x => x.name === owner);
-    el.classList.add("taken");
-    el.style.background = p ? p.color : "#888";
-    el.style.color = "#fff";
-    el.style.borderColor = p ? p.color : "#888";
-    el.querySelector(".downer").textContent = owner;
-  }
-
-  if (state.adminMode) el.classList.add("admin-mode");
-}
-```
-
-}
-
-function onDayClick(d) {
-if (state.adminMode) {
-// toggle weekend
-if (state.weekends.includes(d)) {
-state.weekends = state.weekends.filter(x => x !== d);
-delete state.selections[d];
-} else {
-state.weekends.push(d);
-delete state.selections[d];
-}
-saveToFirebase();
-return;
-}
-
-```
-if (!state.currentPerson) {
-  showToast("اختاري اسمك أولاً 👆");
-  return;
-}
-
-const isWeekend = state.weekends.includes(d);
-if (isWeekend) { showToast("هذا اليوم إجازة ⛔"); return; }
-
-const owner = state.selections[d];
-
-// deselect
-if (owner === state.currentPerson) {
-  delete state.selections[d];
-  saveToFirebase();
-  return;
-}
-
-// taken by someone else
-if (owner && owner !== state.currentPerson) {
-  showToast(`هذا اليوم عند ${owner} ⛔`);
-  return;
-}
-
-// check limit
-const p = PEOPLE.find(x => x.name === state.currentPerson);
-const myDays = Object.values(state.selections).filter(v => v === state.currentPerson).length;
-const totalLimit = p.limit + p.weekend;
-const weekendsTaken = Object.entries(state.selections)
-  .filter(([k, v]) => v === state.currentPerson && state.weekends.includes(Number(k))).length;
-
-if (myDays >= totalLimit) {
-  showToast(`${state.currentPerson} وصلت للحد الأقصى (${totalLimit} أيام) ⛔`);
-  return;
-}
-
-state.selections[d] = state.currentPerson;
-saveToFirebase();
-```
-
-}
-
-function renderStats() {
-const wrap = document.getElementById(“stats”);
-wrap.innerHTML = “”;
-PEOPLE.forEach(p => {
-const myDays = Object.values(state.selections).filter(v => v === p.name).length;
-const total = p.limit + p.weekend;
-const pct = Math.round((myDays / total) * 100);
-const card = document.createElement(“div”);
-card.className = “stat-card”;
-card.innerHTML = `<div class="stat-top"> <span class="stat-name" style="color:${p.color}">${p.name}</span> <span class="stat-count">${myDays}/${total}</span> </div> <div class="progress-bar"> <div class="progress-fill" style="width:${pct}%;background:${p.color}"></div> </div> <div class="stat-sub">باقي ${total - myDays} ${total - myDays === 1 ? 'يوم' : 'أيام'}</div>`;
-wrap.appendChild(card);
-});
-}
-
-function toggleAdmin() {
-if (!state.adminMode) {
-const pass = prompt(“كلمة مرور الأدمن:”);
-if (pass !== ADMIN_PASS) { showToast(“كلمة المرور غلط ⛔”); return; }
-state.adminMode = true;
-document.getElementById(“adminBtn”).textContent = “🔓 خروج أدمن”;
-document.getElementById(“hint”).textContent = “وضع الأدمن: اضغطي على أي يوم لتحديده كإجازة أو إلغاؤه”;
-showToast(“دخلتِ وضع الأدمن ✅”);
-} else {
-state.adminMode = false;
-document.getElementById(“adminBtn”).textContent = “🔐 أدمن”;
-document.getElementById(“hint”).textContent = “اختاري اسمك للبدء”;
-renderCalendar();
-}
-}
-
-function showToast(msg) {
-const t = document.getElementById(“toast”);
-t.textContent = msg;
-t.classList.add(“show”);
-setTimeout(() => t.classList.remove(“show”), 2500);
-}
-</script>
-
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    min-height: 100vh;
-    padding: 15px;
-    direction: rtl;
-    color: #fff;
-  }
-  .container {
-    max-width: 480px;
-    margin: 0 auto;
-  }
-  header {
-    text-align: center;
-    padding: 20px 0 15px;
-  }
-  header h1 {
-    font-size: 1.8em;
-    background: linear-gradient(135deg, #a78bfa, #60a5fa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 4px;
-  }
-  header p { color: #94a3b8; font-size: 0.85em; }
-
-  /* Person buttons */
-  .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; margin-bottom: 15px; }
-  .section-title { font-size: 0.8em; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
-  #personBtns { display: flex; flex-wrap: wrap; gap: 8px; }
-  .person-btn {
-    padding: 8px 18px;
-    border: 2px solid var(--c);
-    background: transparent;
-    color: var(--c);
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.95em;
-    font-weight: bold;
-    transition: all 0.2s;
-    font-family: inherit;
-  }
-  .person-btn:hover, .person-btn.active {
-    background: var(--c);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  }
-
-  /* Hint */
-  #hint {
-    text-align: center;
-    color: #94a3b8;
-    font-size: 0.85em;
-    margin-bottom: 12px;
-    min-height: 20px;
-  }
-
-  /* Calendar */
-  .cal-section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; margin-bottom: 15px; }
-  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .cal-header h2 { font-size: 1em; color: #e2e8f0; }
-  #adminBtn {
-    padding: 6px 14px;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: #fff;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.8em;
-    font-family: inherit;
-    transition: all 0.2s;
-  }
-  #adminBtn:hover { background: rgba(255,255,255,0.2); }
-
-  #calGrid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-  }
-  .day-name {
-    text-align: center;
-    font-size: 0.65em;
-    color: #64748b;
-    padding: 4px 0;
-    font-weight: bold;
-  }
-  .day {
-    aspect-ratio: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border: 1.5px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: rgba(255,255,255,0.03);
-    position: relative;
-    overflow: hidden;
-  }
-  .day:hover { transform: scale(1.08); border-color: rgba(255,255,255,0.3); }
-  .day.empty { border: none; background: transparent; cursor: default; }
-  .day.empty:hover { transform: none; }
-  .day.weekend {
-    background: rgba(255,255,255,0.02);
-    border-color: rgba(255,100,100,0.3);
-    cursor: not-allowed;
-  }
-  .day.weekend:hover { transform: none; }
-  .day.taken { border-width: 2px; }
-  .day.admin-mode { cursor: crosshair; }
-  .dnum { font-size: 0.9em; font-weight: bold; color: #e2e8f0; line-height: 1; }
-  .day.weekend .dnum { color: #64748b; }
-  .downer { font-size: 0.55em; color: rgba(255,255,255,0.7); margin-top: 2px; }
-  .day.weekend .downer { color: #ef4444; font-size: 0.5em; }
-
-  /* Stats */
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .stat-card {
-    background: rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 12px;
-    border: 1px solid rgba(255,255,255,0.08);
-  }
-  .stat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .stat-name { font-weight: bold; font-size: 0.95em; }
-  .stat-count { font-size: 0.85em; color: #94a3b8; }
-  .progress-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 5px; }
-  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
-  .stat-sub { font-size: 0.72em; color: #64748b; }
-
-  /* Toast */
-  #toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: rgba(30,30,50,0.95);
-    color: #fff;
-    padding: 12px 24px;
-    border-radius: 25px;
-    font-size: 0.9em;
-    border: 1px solid rgba(255,255,255,0.15);
-    transition: transform 0.3s ease;
-    z-index: 999;
-    white-space: nowrap;
-  }
-  #toast.show { transform: translateX(-50%) translateY(0); }
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  min-height: 100vh;
+  padding: 15px;
+  direction: rtl;
+  color: #fff;
+}
+.container { max-width: 480px; margin: 0 auto; }
+header { text-align: center; padding: 20px 0 15px; }
+header h1 {
+  font-size: 1.8em;
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+header p { color: #94a3b8; font-size: 0.85em; }
+.section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; margin-bottom: 15px; }
+.section-title { font-size: 0.8em; color: #94a3b8; margin-bottom: 10px; letter-spacing: 1px; }
+#personBtns { display: flex; flex-wrap: wrap; gap: 8px; }
+.person-btn {
+  padding: 8px 18px;
+  border: 2px solid var(--c);
+  background: transparent;
+  color: var(--c);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.95em;
+  font-weight: bold;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.person-btn:hover, .person-btn.active {
+  background: var(--c);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+#hint { text-align: center; color: #94a3b8; font-size: 0.85em; margin-bottom: 12px; min-height: 20px; }
+.cal-section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; margin-bottom: 15px; }
+.cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.cal-header h2 { font-size: 1em; color: #e2e8f0; }
+#adminBtn {
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+#adminBtn:hover { background: rgba(255,255,255,0.2); }
+#calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.day-name { text-align: center; font-size: 0.6em; color: #64748b; padding: 4px 0; font-weight: bold; }
+.day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.03);
+}
+.day:hover { transform: scale(1.08); border-color: rgba(255,255,255,0.3); }
+.day.empty { border: none; background: transparent; cursor: default; }
+.day.empty:hover { transform: none; }
+.day.weekend { background: rgba(255,100,100,0.08); border-color: rgba(255,100,100,0.2); cursor: not-allowed; }
+.day.weekend:hover { transform: none; }
+.day.taken { border-width: 2px; }
+.dnum { font-size: 0.85em; font-weight: bold; color: #e2e8f0; line-height: 1; }
+.day.weekend .dnum { color: #64748b; }
+.downer { font-size: 0.5em; color: rgba(255,255,255,0.7); margin-top: 2px; text-align: center; }
+.day.weekend .downer { color: #ef4444; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.stat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.stat-name { font-weight: bold; font-size: 0.95em; }
+.stat-count { font-size: 0.85em; color: #94a3b8; }
+.progress-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 5px; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+.stat-sub { font-size: 0.72em; color: #64748b; }
+#toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: rgba(30,30,50,0.95);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 0.9em;
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: transform 0.3s ease;
+  z-index: 999;
+  white-space: nowrap;
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
 </style>
-
 </head>
 <body>
 <div class="container">
@@ -402,14 +129,11 @@ setTimeout(() => t.classList.remove(“show”), 2500);
     <h1>📅 جدول أبريل 2026</h1>
     <p>اختاري اسمك وحددي أيامك</p>
   </header>
-
   <div class="section">
     <div class="section-title">اختاري اسمك</div>
     <div id="personBtns"></div>
   </div>
-
   <div id="hint">اختاري اسمك للبدء</div>
-
   <div class="cal-section">
     <div class="cal-header">
       <h2>أبريل 2026</h2>
@@ -417,13 +141,27 @@ setTimeout(() => t.classList.remove(“show”), 2500);
     </div>
     <div id="calGrid"></div>
   </div>
-
   <div class="section">
     <div class="section-title">إحصائيات</div>
     <div class="stats-grid" id="stats"></div>
   </div>
 </div>
-
 <div id="toast"></div>
-</body>
-</html>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAXAMkPb9KJtOJFCWXWvy9x34wYQjHdNEA",
+    authDomain: "calendar-april.firebaseapp.com",
+    databaseURL: "https://calendar-april-default-rtdb.firebaseio.com",
+    projectId: "calendar-april",
+    storageBucket: "calendar-april.firebasestorage.app",
+    messagingSenderId: "702724119716",
+    appId: "1:702724119716:web:672f892c9dd515488a5a31"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const PEOPLE = [
+    { name: "نورة",  limit: 6, weekend: 3, color: "#e91e8c" },
+    { name: "علي
