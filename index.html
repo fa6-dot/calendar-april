@@ -1,167 +1,214 @@
 <!DOCTYPE html>
 
-<html dir="rtl" lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>جدول أبريل 2026</title>
+<title>جدول ابريل 2026</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-  font-family: 'Segoe UI', Tahoma, sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  min-height: 100vh;
-  padding: 15px;
-  direction: rtl;
-  color: #fff;
-}
-.container { max-width: 480px; margin: 0 auto; }
-header { text-align: center; padding: 20px 0 15px; }
-header h1 {
-  font-size: 1.8em;
-  background: linear-gradient(135deg, #a78bfa, #60a5fa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 4px;
-}
-header p { color: #94a3b8; font-size: 0.85em; }
-.section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; margin-bottom: 15px; }
-.section-title { font-size: 0.8em; color: #94a3b8; margin-bottom: 10px; letter-spacing: 1px; }
-#personBtns { display: flex; flex-wrap: wrap; gap: 8px; }
-.person-btn {
-  padding: 8px 18px;
-  border: 2px solid var(--c);
-  background: transparent;
-  color: var(--c);
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 0.95em;
-  font-weight: bold;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-.person-btn:hover, .person-btn.active {
-  background: var(--c);
-  color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-}
-#hint { text-align: center; color: #94a3b8; font-size: 0.85em; margin-bottom: 12px; min-height: 20px; }
-.cal-section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; margin-bottom: 15px; }
-.cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.cal-header h2 { font-size: 1em; color: #e2e8f0; }
-#adminBtn {
-  padding: 6px 14px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 0.8em;
-  font-family: inherit;
-  transition: all 0.2s;
-}
-#adminBtn:hover { background: rgba(255,255,255,0.2); }
-#calGrid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
-.day-name { text-align: center; font-size: 0.6em; color: #64748b; padding: 4px 0; font-weight: bold; }
-.day {
-  aspect-ratio: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border: 1.5px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: rgba(255,255,255,0.03);
-}
-.day:hover { transform: scale(1.08); border-color: rgba(255,255,255,0.3); }
-.day.empty { border: none; background: transparent; cursor: default; }
-.day.empty:hover { transform: none; }
-.day.weekend { background: rgba(255,100,100,0.08); border-color: rgba(255,100,100,0.2); cursor: not-allowed; }
-.day.weekend:hover { transform: none; }
-.day.taken { border-width: 2px; }
-.dnum { font-size: 0.85em; font-weight: bold; color: #e2e8f0; line-height: 1; }
-.day.weekend .dnum { color: #64748b; }
-.downer { font-size: 0.5em; color: rgba(255,255,255,0.7); margin-top: 2px; text-align: center; }
-.day.weekend .downer { color: #ef4444; }
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.stat-card {
-  background: rgba(255,255,255,0.05);
-  border-radius: 12px;
-  padding: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-.stat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.stat-name { font-weight: bold; font-size: 0.95em; }
-.stat-count { font-size: 0.85em; color: #94a3b8; }
-.progress-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 5px; }
-.progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
-.stat-sub { font-size: 0.72em; color: #64748b; }
-#toast {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: rgba(30,30,50,0.95);
-  color: #fff;
-  padding: 12px 24px;
-  border-radius: 25px;
-  font-size: 0.9em;
-  border: 1px solid rgba(255,255,255,0.15);
-  transition: transform 0.3s ease;
-  z-index: 999;
-  white-space: nowrap;
-}
-#toast.show { transform: translateX(-50%) translateY(0); }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Tahoma,sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);min-height:100vh;padding:15px;direction:rtl;color:#fff}
+.wrap{max-width:480px;margin:0 auto}
+h1{text-align:center;font-size:1.7em;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;padding:20px 0 5px}
+.sub{text-align:center;color:#94a3b8;font-size:.85em;margin-bottom:15px}
+.box{background:rgba(255,255,255,.05);border-radius:16px;padding:15px;margin-bottom:12px}
+.lbl{font-size:.75em;color:#94a3b8;margin-bottom:10px;letter-spacing:1px}
+#pbtns{display:flex;flex-wrap:wrap;gap:8px}
+.pb{padding:8px 16px;border:2px solid var(--c);background:transparent;color:var(--c);border-radius:20px;cursor:pointer;font-size:.9em;font-weight:bold;font-family:inherit;transition:all .2s}
+.pb.on,.pb:hover{background:var(--c);color:#fff;transform:translateY(-2px)}
+#hint{text-align:center;color:#94a3b8;font-size:.82em;margin-bottom:10px;min-height:18px}
+.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.ch h2{font-size:1em;color:#e2e8f0}
+#abtn{padding:6px 14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:20px;cursor:pointer;font-size:.78em;font-family:inherit}
+#grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.dn{text-align:center;font-size:.58em;color:#475569;padding:3px 0;font-weight:bold}
+.d{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,.08);border-radius:7px;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.03)}
+.d:hover{transform:scale(1.1);border-color:rgba(255,255,255,.3)}
+.d.x{border:none;background:transparent;cursor:default}
+.d.x:hover{transform:none}
+.d.w{background:rgba(255,80,80,.07);border-color:rgba(255,80,80,.2);cursor:not-allowed}
+.d.w:hover{transform:none}
+.d.t{border-width:2px}
+.n{font-size:.82em;font-weight:bold;color:#e2e8f0;line-height:1}
+.d.w .n{color:#475569}
+.o{font-size:.48em;color:rgba(255,255,255,.75);margin-top:2px;text-align:center;line-height:1.2}
+.d.w .o{color:#f87171}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sc{background:rgba(255,255,255,.05);border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,.07)}
+.st{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.sn{font-weight:bold;font-size:.9em}
+.sk{font-size:.8em;color:#94a3b8}
+.pb2{height:4px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;margin-bottom:4px}
+.pf{height:100%;border-radius:4px;transition:width .4s}
+.ss{font-size:.68em;color:#64748b}
+#toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(20,20,40,.95);color:#fff;padding:11px 22px;border-radius:25px;font-size:.88em;border:1px solid rgba(255,255,255,.15);transition:transform .3s;z-index:999;white-space:nowrap}
+#toast.on{transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <h1>📅 جدول أبريل 2026</h1>
-    <p>اختاري اسمك وحددي أيامك</p>
-  </header>
-  <div class="section">
-    <div class="section-title">اختاري اسمك</div>
-    <div id="personBtns"></div>
+<div class="wrap">
+  <h1>&#128197; جدول ابريل 2026</h1>
+  <p class="sub">اختاري اسمك وحددي ايامك</p>
+  <div class="box">
+    <div class="lbl">اختاري اسمك</div>
+    <div id="pbtns"></div>
   </div>
   <div id="hint">اختاري اسمك للبدء</div>
-  <div class="cal-section">
-    <div class="cal-header">
-      <h2>أبريل 2026</h2>
-      <button id="adminBtn">🔐 أدمن</button>
+  <div class="box">
+    <div class="ch">
+      <h2>ابريل 2026</h2>
+      <button id="abtn">&#128274; ادمن</button>
     </div>
-    <div id="calGrid"></div>
+    <div id="grid"></div>
   </div>
-  <div class="section">
-    <div class="section-title">إحصائيات</div>
-    <div class="stats-grid" id="stats"></div>
+  <div class="box">
+    <div class="lbl">احصائيات</div>
+    <div class="sg" id="stats"></div>
   </div>
 </div>
 <div id="toast"></div>
-
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAXAMkPb9KJtOJFCWXWvy9x34wYQjHdNEA",
-    authDomain: "calendar-april.firebaseapp.com",
-    databaseURL: "https://calendar-april-default-rtdb.firebaseio.com",
-    projectId: "calendar-april",
-    storageBucket: "calendar-april.firebasestorage.app",
-    messagingSenderId: "702724119716",
-    appId: "1:702724119716:web:672f892c9dd515488a5a31"
-  };
+var cfg={
+  apiKey:"AIzaSyAXAMkPb9KJtOJFCWXWvy9x34wYQjHdNEA",
+  authDomain:"calendar-april.firebaseapp.com",
+  databaseURL:"https://calendar-april-default-rtdb.firebaseio.com",
+  projectId:"calendar-april",
+  storageBucket:"calendar-april.firebasestorage.app",
+  messagingSenderId:"702724119716",
+  appId:"1:702724119716:web:672f892c9dd515488a5a31"
+};
+firebase.initializeApp(cfg);
+var db=firebase.database();
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+var PP=[
+{n:“نورة”, l:6, w:3, c:”#e91e8c”},
+{n:“عليا”, l:5, w:3, c:”#9c27b0”},
+{n:“ميسا”, l:6, w:3, c:”#3f51b5”},
+{n:“مهرة”, l:6, w:3, c:”#009688”},
+{n:“عفراء”,l:5, w:3, c:”#ff5722”},
+{n:“خلود”, l:5, w:3, c:”#f59e0b”},
+{n:“مروة”, l:5, w:3, c:”#607d8b”}
+];
 
-  const PEOPLE = [
-    { name: "نورة",  limit: 6, weekend: 3, color: "#e91e8c" },
-    { name: "علي
+var sel={}, wknd=[], admin=false, cur=null;
+
+// person buttons
+var pb=document.getElementById(“pbtns”);
+PP.forEach(function(p){
+var b=document.createElement(“button”);
+b.className=“pb”; b.textContent=p.n;
+b.style.setProperty(”–c”,p.c);
+b.onclick=function(){
+if(admin)return;
+cur=p.n;
+document.querySelectorAll(”.pb”).forEach(function(x){x.classList.remove(“on”)});
+b.classList.add(“on”);
+document.getElementById(“hint”).textContent=“اخترتِ: “+p.n+” — اضغطي على الايام”;
+};
+pb.appendChild(b);
+});
+
+// grid
+var g=document.getElementById(“grid”);
+[“احد”,“اثنين”,“ثلاثاء”,“اربعاء”,“خميس”,“جمعة”,“سبت”].forEach(function(d){
+var e=document.createElement(“div”);
+e.className=“dn”; e.textContent=d; g.appendChild(e);
+});
+for(var i=0;i<3;i++){var e=document.createElement(“div”);e.className=“d x”;g.appendChild(e);}
+for(var d=1;d<=30;d++){
+var e=document.createElement(“div”);
+e.className=“d”; e.id=“d”+d;
+e.innerHTML=’<span class="n">’+d+’</span><span class="o"></span>’;
+(function(dd){e.onclick=function(){click(dd)};})(d);
+g.appendChild(e);
+}
+
+function click(d){
+if(admin){
+var i=wknd.indexOf(d);
+if(i>-1){wknd.splice(i,1);delete sel[d];}
+else{wknd.push(d);delete sel[d];}
+save();return;
+}
+if(!cur){toast(“اختاري اسمك اولا”);return;}
+if(wknd.indexOf(d)>-1){toast(“هذا اليوم اجازة”);return;}
+var own=sel[d];
+if(own===cur){delete sel[d];save();return;}
+if(own&&own!==cur){toast(“هذا اليوم عند “+own);return;}
+var p=PP.find(function(x){return x.n===cur});
+var cnt=Object.values(sel).filter(function(v){return v===cur}).length;
+if(cnt>=p.l+p.w){toast(“وصلتِ للحد الاقصى (”+(p.l+p.w)+” ايام)”);return;}
+sel[d]=cur; save();
+}
+
+function save(){
+db.ref(“cal”).set({s:sel,w:wknd});
+}
+
+db.ref(“cal”).on(“value”,function(snap){
+var data=snap.val()||{};
+sel=data.s||{}; wknd=data.w||[];
+render();
+});
+
+function render(){
+for(var d=1;d<=30;d++){
+var e=document.getElementById(“d”+d);
+if(!e)continue;
+var own=sel[d], isW=wknd.indexOf(d)>-1;
+e.className=“d”;
+e.style.background=””; e.style.borderColor=””;
+e.querySelector(”.o”).textContent=””;
+if(isW){
+e.classList.add(“w”);
+e.querySelector(”.o”).textContent=“اجازة”;
+} else if(own){
+var p=PP.find(function(x){return x.n===own});
+e.classList.add(“t”);
+e.style.background=p?p.c+“bb”:”#888”;
+e.style.borderColor=p?p.c:”#888”;
+e.querySelector(”.o”).textContent=own;
+}
+}
+renderStats();
+}
+
+function renderStats(){
+var w=document.getElementById(“stats”); w.innerHTML=””;
+PP.forEach(function(p){
+var my=Object.values(sel).filter(function(v){return v===p.n}).length;
+var tot=p.l+p.w, pct=Math.round(my/tot*100);
+var c=document.createElement(“div”); c.className=“sc”;
+c.innerHTML=’<div class="st"><span class="sn" style="color:'+p.c+'">’+p.n+’</span><span class="sk">’+my+’/’+tot+’</span></div>’
++’<div class="pb2"><div class="pf" style="width:'+pct+'%;background:'+p.c+'"></div></div>’
++’<div class="ss">باقي ‘+(tot-my)+’ ايام</div>’;
+w.appendChild(c);
+});
+}
+
+document.getElementById(“abtn”).onclick=function(){
+if(!admin){
+var p=prompt(“كلمة مرور الادمن:”);
+if(p!==“1234”){toast(“كلمة المرور غلط”);return;}
+admin=true;
+document.getElementById(“abtn”).textContent=“خروج ادمن”;
+document.getElementById(“hint”).textContent=“وضع الادمن: اضغطي على اي يوم لتعيينه اجازة او الغاءه”;
+toast(“دخلتِ وضع الادمن”);
+} else {
+admin=false;
+document.getElementById(“abtn”).textContent=”🔒 ادمن”;
+document.getElementById(“hint”).textContent=“اختاري اسمك للبدء”;
+}
+};
+
+function toast(m){
+var t=document.getElementById(“toast”);
+t.textContent=m; t.classList.add(“on”);
+setTimeout(function(){t.classList.remove(“on”)},2500);
+}
+</script>
+
+</body>
+</html>
